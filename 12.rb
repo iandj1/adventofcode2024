@@ -1,16 +1,13 @@
 input = File.open("inputs/12-sample.txt")
-# input = File.open("inputs/12.txt")
+input = File.open("inputs/12.txt")
 
 grid = {}
-size = 0
 
 input.each_with_index do |line, row|
   line.strip.chars.each_with_index do |char, col|
     grid[[row, col]] = char
   end
-  size = row
 end
-
 
 regions = []
 while grid.any?
@@ -33,12 +30,12 @@ while grid.any?
 end
 
 def bordering_coords(region)
-  coords = []
+  coords = Set.new
   region.each do |row, col|
-    [[0,1], [0,-1], [1,0], [-1,0]].count do |row_delta, col_delta|
+    [[0,1,:right], [0,-1,:left], [1,0,:down], [-1,0,:up]].count do |row_delta, col_delta, direction|
       test_coord = [row + row_delta, col + col_delta]
       if !region.include? [test_coord]
-        coords << test_coord if !region.include? [row + row_delta, col + col_delta]
+        coords << (test_coord << direction) if !region.include? [row + row_delta, col + col_delta]
       end
     end
   end
@@ -54,66 +51,33 @@ end
 puts total
 
 
+# part 2
 total = 0
 regions.each do |region|
-  border_points = bordering_coords(region).tally
+  border_points = bordering_coords(region)
   edges = 0
   while !border_points.empty?
-    coord, count = border_points.first
-    row, col = coord
+    row, col, direction = border_points.first
     # expand coord horizontally
-    if (border_points[[row, col-1]] || border_points[[row, col+1]])
-      count -= 1
-      edges += 1
-      # linear_coords = []
-      (col+1..col+size).each do |test_col|
-        if border_points[[row, test_col]]
-          # linear_coords << [row, test_col]
-          border_points[[row, test_col]] -= 1
-        else
-          break
-        end
+    if (border_points.include?([row, col-1, direction]) || border_points.include?([row, col+1, direction])) && [:up, :down].include?(direction)
+      (col+1..).each do |test_col|
+        break unless border_points.delete?([row, test_col, direction])
       end
-      (col-size..col-1).reverse_each do |test_col|
-        if border_points[[row, test_col]]
-          # linear_coords << [row, test_col]
-          border_points[[row, test_col]] -= 1
-        else
-          break
-        end
+      (..col-1).reverse_each do |test_col|
+        break unless border_points.delete?([row, test_col, direction])
       end
-    end
     # expand coord vertically
-    if (border_points[[row-1, col]] || border_points[[row+1, col]]) && count > 0
-      count -= 1
-      edges += 1
-      # linear_coords = []
-      (row+1..row+size).each do |test_row|
-        if border_points[[test_row, col]]
-          # linear_coords << [test_row, col]
-          border_points[[test_row, col]] -= 1
-        else
-          break
-        end
+    elsif (border_points.include?([row-1, col, direction]) || border_points.include?([row+1, col, direction])) && [:left, :right].include?(direction)
+      (row+1..).each do |test_row|
+        break unless border_points.delete?([test_row, col, direction])
       end
-      (row-size..row-1).reverse_each do |test_row|
-        if border_points[[test_row, col]]
-          # linear_coords << [test_row, col]
-          border_points[[test_row, col]] -= 1
-        else
-          break
-        end
+      (..row-1).reverse_each do |test_row|
+        break unless border_points.delete?([test_row, col, direction])
       end
     end
-    # must be 1x1 or internal endpoint, add 1 anyway
-    edges += count
-    border_points[coord] = 0
-    # break
-    border_points.reject!{|_,val| val == 0}
+    edges += 1
+    border_points.delete([row, col, direction])
   end
-  pp region
-  pp region.count
-  pp edges
   total += edges * region.count
 end
 
