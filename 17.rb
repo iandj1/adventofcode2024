@@ -7,23 +7,14 @@ reg_c = input.readline[(/\d+/)].to_i
 input.readline
 program = input.readline.scan(/\d+/).map(&:to_i)
 
-
 pointer = 0
-
-# reg_a, reg_b, reg_c = [10,5,0]
-# program = [0,5]
 output = []
-
-reg_a = 0
 
 loop do
   opcode = program[pointer]
   break if opcode.nil?
   operand = program[pointer+1]
   combo = [0,1,2,3,reg_a,reg_b,reg_c]
-
-  pp [opcode, operand]
-  pp [reg_a, reg_b, reg_c]
 
   case opcode
   when 0 # adv (A division)
