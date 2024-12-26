@@ -27,31 +27,17 @@ total = secrets.sum do |secret|
   end
   secret
 end
-puts total
+puts total # part 1
 
-delta_chains = Set.new
-delta_chain_per_monkey = []
-
-# build lookup of delta chains to speed up processing
-deltas.each do |price_deltas|
-  delta_hash = {}
+# part 2
+delta_prices = Hash.new(0)
+deltas.each_with_index do |price_deltas, monkey_no|
+  seen_delta_chains = Set.new
   price_deltas.each_cons(4).with_index do |delta_chain, index|
-    delta_chains << delta_chain
-    delta_hash[delta_chain] ||= index
+    if seen_delta_chains.add? delta_chain
+      delta_prices[delta_chain] += prices[monkey_no][index+4]
+    end
   end
-  delta_chain_per_monkey << delta_hash
 end
 
-best = 0
-
-# find delta chain to purchase banans
-delta_chains.each do |delta_chain|
-  sum = 0
-  delta_chain_per_monkey.each_with_index do |delta_hash, monkey_no|
-    earliest_index = delta_hash[delta_chain]
-    next if earliest_index.nil?
-    sum += prices[monkey_no][earliest_index+4] # offset by 4 to get price at end of delta
-  end
-  best = [best, sum].max
-end
-puts best
+puts delta_prices.values.max
