@@ -13,31 +13,23 @@ def evolve(secret)
   secret = ((secret * 2048) ^ secret) % 16777216
 end
 
-prices = []
-deltas = []
+delta_prices = Hash.new(0)
 
-# calculate prices, deltas, and part 1 answer
 total = secrets.sum do |secret|
-  prices << [secret % 10]
-  deltas << []
+  last3, last2, last1, prev = nil
+  seen_chains = Set.new
   2000.times do
     secret = evolve(secret)
-    deltas.last << (secret % 10 - prices.last.last)
-    prices.last << secret % 10
+    price = secret % 10
+    delta = price - prev unless prev.nil?
+    chain = [last3, last2, last1, delta]
+    if !chain.include?(nil) && seen_chains.add?(chain)
+      delta_prices[chain] += price
+    end
+    last3, last2, last1 = last2, last1, delta
+    prev = price
   end
   secret
 end
 puts total # part 1
-
-# part 2
-delta_prices = Hash.new(0)
-deltas.each_with_index do |price_deltas, monkey_no|
-  seen_delta_chains = Set.new
-  price_deltas.each_cons(4).with_index do |delta_chain, index|
-    if seen_delta_chains.add? delta_chain
-      delta_prices[delta_chain] += prices[monkey_no][index+4]
-    end
-  end
-end
-
-puts delta_prices.values.max
+puts delta_prices.values.max # part 2
