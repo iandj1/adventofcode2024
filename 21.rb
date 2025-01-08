@@ -45,8 +45,7 @@ def build_shortest_path_hash(pad_hash, pad)
     if pad[to_row][from_col]
       options << vertical_str + horizontal_str + 'A'
     end
-    options.uniq!
-    if options.count == 1
+    if options.uniq.count == 1 # both options are the same, just return the first
       path_hash[[from, to]] = options[0]
     elsif ['v>', '<v', '<^', '^>'].any?{|x| options[0].include? x} # these directions are better than alternatives
       path_hash[[from, to]] = options[0]
