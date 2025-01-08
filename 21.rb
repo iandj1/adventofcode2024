@@ -60,7 +60,7 @@ def build_shortest_path_hash(pad_hash, pad)
     options.uniq!
     if options.count == 1
       path_hash[[from, to]] = options[0]
-    elsif ['v>', '<v', '<^'].any?{|x| options[0].include? x} # these directions are better than alternatives
+    elsif ['v>', '<v', '<^', '^>'].any?{|x| options[0].include? x} # these directions are better than alternatives
       path_hash[[from, to]] = options[0]
     else
       path_hash[[from, to]] = options[1]
